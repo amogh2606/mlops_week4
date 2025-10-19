@@ -1,7 +1,7 @@
 numpy==1.26.4
-pandas
-scikit-learn
-dvc[gs]
-joblib
-pytest
-cml
+pandas==2.2.2
+scikit-learn==1.5.1
+dvc[gs]==3.62.0
+joblib==1.4.2
+pytest==8.3.3
+cml==0.9.0
