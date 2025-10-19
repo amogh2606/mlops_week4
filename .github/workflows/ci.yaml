@@ -31,7 +31,7 @@ jobs:
         run: |
           sudo apt-get update
           #sudo apt-get install python3-dev
-          pip install -r requirements.txt
+          pip install -y cml pytest pandas numpy dvc gcsfs scikit-learn
           
       # --- DVC CONFIG & PULL ---
       - name: Configure DVC for GCS Remote
