@@ -1,0 +1,76 @@
+# .github/workflows/ci.yml
+name: IRIS DVC MLOps CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev # Run CI on PRs to both branches
+
+jobs:
+  test_and_report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        # Need to fetch history and tags for dvc/git, and CML
+        with:
+          fetch-depth: 0 
+      
+      # --- SETUP ---
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies (DVC, Pytest, CML)
+        run: |
+          pip install -r requirements.txt
+          
+      # --- DVC CONFIG & PULL ---
+      - name: Configure DVC for GCS Remote
+        # Use the DVC bucket name you provided
+        run: |
+          dvc remote add -d gcs_bucket gs://week-2-mlops-bucket/dvc_remote
+          dvc config core.no_scm true # Useful for CI environments
+        
+      - name: Set Google Cloud Credentials
+        # This step uses the secret you must configure in GitHub
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: DVC Pull Data (V3) and Model (V3)
+        # Pulls the data and model files needed for evaluation
+        run: |
+          dvc pull data/V3_augmented.csv.dvc
+          dvc pull artifacts.dvc # Pulls the latest version of the artifacts folder
+      
+      # --- TESTING ---
+      - name: Run Pytest Validation and Evaluation Tests
+        run: pytest tests/test_pipeline.py
+        
+      # --- CML REPORT (Only on Pull Requests) ---
+      - name: Create CML Sanity Report
+        if: github.event_name == 'pull_request'
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "## CI/CD Pipeline Status Report 🤖" > report.md
+          echo "" >> report.md
+          echo "### Data and Model DVC Status" >> report.md
+          echo "- **Data Version:** \`data/V3_augmented.csv\` (Pulled from GCS)" >> report.md
+          echo "- **Model Version:** Latest version in \`artifacts/\`" >> report.md
+          echo "" >> report.md
+          echo "### Test Results (pytest)" >> report.md
+          echo "- **Data Validation:** ✅ Passed" >> report.md
+          echo "- **Model Sanity Check:** ✅ Passed" >> report.md
+          echo "" >> report.md
+          echo "CI pipeline successfully fetched artifacts from DVC and passed all tests on commit \`${{ github.sha }}\`." >> report.md
+          
+          # Run Sanity Test (CML) and post as comment
+          cml comment create report.md
