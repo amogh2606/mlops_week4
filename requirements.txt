@@ -4,4 +4,4 @@ scikit-learn>=1.5.0
 pytest>=8.0.0
 gcsfs
 dvc
-cml>=2.0.0
+cml
