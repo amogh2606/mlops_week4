@@ -29,20 +29,37 @@ def test_data_schema_and_integrity():
 # --- Model Evaluation Unit Test ---
 @pytest.mark.evaluation
 def test_model_performance_sanity_check():
-    """Loads the model and checks if its reported accuracy meets a minimum threshold."""
-    # The assertion will now correctly look for artifacts/model.joblib
+    """
+    Loads the model artifact and performs a basic sanity check 
+    to ensure it loads correctly and predicts a valid class label.
+    """
+    # 1. ASSERT FILE EXISTENCE (Success check from previous step)
     assert os.path.exists(MODEL_PATH), f"Model file not found: {MODEL_PATH}. Run 'dvc pull'."
-    
-    # NOTE: You are loading a .joblib file here, not a .pkl file. 
-    # The pickle.load will work fine for a joblib file saved by joblib.dump.
-    model = load(MODEL_PATH)
-    
-    # Sanity check prediction with a known-good IRIS sample (e.g., Iris-setosa)
-    # Sepal_Length: 5.1, Sepal_Width: 3.5, Petal_Length: 1.4, Petal_Width: 0.2
+
+    # 2. LOAD MODEL USING JOBLIB (Fixes UnpicklingError)
+    try:
+        # Use joblib.load directly, as the model was saved using joblib.dump
+        model = load(MODEL_PATH)
+    except Exception as e:
+        pytest.fail(f"Failed to load model from {MODEL_PATH} using joblib.load. Error: {e}")
+
+    # 3. DEFINE SANITY INPUT
+    # This input is a known sample for Iris-setosa: Sepal_Length: 5.1, Sepal_Width: 3.5, Petal_Length: 1.4, Petal_Width: 0.2
     dummy_input = np.array([[5.1, 3.5, 1.4, 0.2]])
-    prediction = model.predict(dummy_input)
     
+    # 4. GET PREDICTION
+    prediction = model.predict(dummy_input)
+
+    # 5. ASSERT PREDICTION SANITY (Fixes Assertion Error)
     assert len(prediction) == 1, "Model failed to return a single prediction."
     
-    # The model should be a classifier (e.g., LogisticRegression/SVC) and predict a class (0, 1, or 2)
-    assert prediction[0] in [0, 1, 2], f"Model predicted an unexpected class: {prediction[0]}"
+    # Check if the predicted label is one of the expected string classes
+    VALID_CLASSES = ['setosa', 'versicolor', 'virginica']
+    
+    # This assertion ensures the model output matches the format it was trained on (strings).
+    assert prediction[0] in VALID_CLASSES, \
+           f"Model predicted an unexpected class '{prediction[0]}'. Must be one of {VALID_CLASSES}"
+    
+    # Optional: A stronger test asserting the specific expected class for the sample input
+    assert prediction[0] == 'setosa', \
+           f"Model predicted {prediction[0]}, but expected 'setosa' for the dummy input."
