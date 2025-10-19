@@ -6,8 +6,9 @@ import pickle
 import numpy as np
 
 # Define paths relative to the repository root
-MODEL_PATH = "artifacts/iris_classifier_model.pkl"
-METRICS_PATH = "artifacts/V3_AUGMENTED_RUN_metrics.json" 
+MODEL_PATH = "artifacts/model.joblib"  
+METRICS_PATH = "artifacts/V3_AUGMENTED_RUN_metrics.json"
+
 DATA_PATH = "data/V3_augmented.csv" # Test against the latest data (V3)
 
 # --- Data Validation Unit Test ---
@@ -28,12 +29,11 @@ def test_data_schema_and_integrity():
 @pytest.mark.evaluation
 def test_model_performance_sanity_check():
     """Loads the model and checks if its reported accuracy meets a minimum threshold."""
+    # The assertion will now correctly look for artifacts/model.joblib
     assert os.path.exists(MODEL_PATH), f"Model file not found: {MODEL_PATH}. Run 'dvc pull'."
     
-    # Check reported accuracy (assuming your training script outputs a similar file/metric)
-    # Since we can't easily read a JSON metric file without more info, 
-    # let's focus on loading the model and making a dummy prediction.
-    
+    # NOTE: You are loading a .joblib file here, not a .pkl file. 
+    # The pickle.load will work fine for a joblib file saved by joblib.dump.
     with open(MODEL_PATH, 'rb') as f:
         model = pickle.load(f)
     
