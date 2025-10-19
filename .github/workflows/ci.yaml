@@ -30,9 +30,8 @@ jobs:
       - name: Install dependencies (DVC, Pytest, CML)
         run: |
           sudo apt-get update
-          sudo apt install python3.10
           #sudo apt-get install python3-dev
-          pip3 install -r requirements.txt
+          pip install -r requirements.txt
           
       # --- DVC CONFIG & PULL ---
       - name: Configure DVC for GCS Remote
