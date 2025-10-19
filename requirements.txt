@@ -1,7 +1,7 @@
 pandas>=2.0.0
 numpy>=2.0.0
-scikit-learn
-pytest
+scikit-learn>=1.5.0
+pytest>=8.0.0
 gcsfs
 dvc
-cml
+cml>=2.0.0
