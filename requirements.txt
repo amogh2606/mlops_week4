@@ -2,6 +2,6 @@ pandas>=2.0.0
 numpy>=2.0.0
 scikit-learn>=1.5.0
 pytest>=8.0.0
-gcsfs
-dvc
+gcsfs>=2025.0.0
+dvc>=3.0.0
 cml
