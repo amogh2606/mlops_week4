@@ -1,4 +1,5 @@
-pandas
+numpy>=2.3.0
+pandas>=2.3.0
 scikit-learn
 pytest
 gcsfs
