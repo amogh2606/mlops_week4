@@ -1,6 +1,7 @@
+numpy
 pandas
 scikit-learn
+dvc[gs]
+joblib
 pytest
-gcsfs
-dvc
-cml
+
