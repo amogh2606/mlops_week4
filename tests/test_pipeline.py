@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import pickle
 import numpy as np
+from joblib import load
 
 # Define paths relative to the repository root
 MODEL_PATH = "artifacts/model.joblib"  
@@ -34,8 +35,7 @@ def test_model_performance_sanity_check():
     
     # NOTE: You are loading a .joblib file here, not a .pkl file. 
     # The pickle.load will work fine for a joblib file saved by joblib.dump.
-    with open(MODEL_PATH, 'rb') as f:
-        model = pickle.load(f)
+    model = load(MODEL_PATH)
     
     # Sanity check prediction with a known-good IRIS sample (e.g., Iris-setosa)
     # Sepal_Length: 5.1, Sepal_Width: 3.5, Petal_Length: 1.4, Petal_Width: 0.2
