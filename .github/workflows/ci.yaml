@@ -49,8 +49,8 @@ jobs:
       - name: DVC Pull Data (V3) and Model (V3)
         # Pulls the data and model files needed for evaluation
         run: |
-          dvc pull data/V3_augmented.csv.dvc
-          dvc pull artifacts.dvc # Pulls the latest version of the artifacts folder
+          dvc pull data/V3_augmented.csv.dvc --force
+          dvc pull artifacts.dvc --force # Pulls the latest version of the artifacts folder
       
       # --- TESTING ---
       - name: Run Pytest Validation and Evaluation Tests
