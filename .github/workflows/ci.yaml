@@ -51,7 +51,7 @@ jobs:
       # ----------------------------------------------------
       - name: Configure DVC for GCS Remote
         run: |
-          dvc remote add -d gcs_bucket gs://week-2-mlops-bucket/dvc_remote
+          dvc remote add -d gcs_bucket gs://week-2-mlops-bucket/dvc_remote --force
           dvc config core.no_scm true
 
       - name: Set Google Cloud Credentials
