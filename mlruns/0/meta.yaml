@@ -1,6 +1,6 @@
-artifact_location: mlflow-artifacts:/0
-creation_time: 1761912576837
+artifact_location: file:///home/jupyter/mlruns/0
+creation_time: 1761917760163
 experiment_id: '0'
-last_update_time: 1761912576837
+last_update_time: 1761917760163
 lifecycle_stage: active
 name: Default
