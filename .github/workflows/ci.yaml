@@ -40,30 +40,20 @@ jobs:
           sudo apt-get update
           pip install -r requirements.txt
           
-      # ----------------------------------------------------
-      # 2. DVC & GCS AUTH
-      # ----------------------------------------------------
-      - name: Configure DVC for GCS Remote
-        run: |
-          dvc remote add -d gcs_bucket gs://week-2-mlops-bucket/dvc_remote
-          dvc config core.no_scm true
+      - name: Set MLflow Tracking URI and Authenticate
+          env:
+            # Use a secret for the remote server address
+            MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+            # If MLflow needs auth (e.g., using Databricks), include relevant tokens here
+          run: |
+            # MLflow automatically uses the tracking URI set in the environment
+            # Note: MLflow's default tracking URI is set by the env var.
+            echo "MLflow tracking set up."
 
-      - name: Set Google Cloud Credentials
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-      - name: DVC Pull Data and Model
-        run: |
-          # Use --force to prevent issues with files generated/left over by the runner
-          dvc pull data/V3_augmented.csv.dvc --force
-          dvc pull artifacts.dvc --force 
-          
-      # ----------------------------------------------------
-      # 3. TESTING
-      # ----------------------------------------------------
-      - name: Run Pytest Validation and Evaluation Tests
-        run: pytest tests/test_pipeline.py
+     - name: Run Pytest Validation and Evaluation Tests
+          # The tests/test_pipeline.py script automatically loads the model 
+          # via the MLFLOW_MODEL_URI
+          run: pytest tests/test_pipeline.py
 
       # ----------------------------------------------------
       # 4. CML SETUP AND REPORTING
