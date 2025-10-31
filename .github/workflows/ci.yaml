@@ -1,4 +1,5 @@
 # .github/workflows/ci.yml
+# .github/workflows/ci.yml
 name: IRIS DVC MLOps CI
 
 on:
@@ -14,49 +15,62 @@ on:
 jobs:
   test_and_report:
     runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write   # Allows CML to write to the repository (if generating images/metrics)
+      pull-requests: write # Allows CML to post comments/reports on PRs
+      
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-        # Need to fetch history and tags for dvc/git, and CML
         with:
-          fetch-depth: 0 
+          fetch-depth: 0
       
-      # --- SETUP ---
+      # ----------------------------------------------------
+      # 1. SETUP CORE ENVIRONMENT
+      # ----------------------------------------------------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-  
-      - name: Install dependencies (DVC, Pytest, CML)
+
+      # Install Python dependencies (excluding CML, which is installed by the next action)
+      - name: Install dependencies (DVC, Pytest)
         run: |
           sudo apt-get update
-          #sudo apt-get install python3-dev
           pip install -r requirements.txt
           
-      # --- DVC CONFIG & PULL ---
+      # ----------------------------------------------------
+      # 2. DVC & GCS AUTH
+      # ----------------------------------------------------
       - name: Configure DVC for GCS Remote
-        # Use the DVC bucket name you provided
         run: |
           dvc remote add -d gcs_bucket gs://week-2-mlops-bucket/dvc_remote
-          dvc config core.no_scm true # Useful for CI environments
-        
+          dvc config core.no_scm true
+
       - name: Set Google Cloud Credentials
-        # This step uses the secret you must configure in GitHub
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: DVC Pull Data (V3) and Model (V3)
-        # Pulls the data and model files needed for evaluation
+      - name: DVC Pull Data and Model
         run: |
+          # Use --force to prevent issues with files generated/left over by the runner
           dvc pull data/V3_augmented.csv.dvc --force
-          dvc pull artifacts.dvc --force # Pulls the latest version of the artifacts folder
-      
-      # --- TESTING ---
+          dvc pull artifacts.dvc --force 
+          
+      # ----------------------------------------------------
+      # 3. TESTING
+      # ----------------------------------------------------
       - name: Run Pytest Validation and Evaluation Tests
         run: pytest tests/test_pipeline.py
+
+      # ----------------------------------------------------
+      # 4. CML SETUP AND REPORTING
+      # ----------------------------------------------------
+      - name: Setup CML 🛠️
+        uses: iterative/setup-cml@v2
         
-      # --- CML REPORT (Only on Pull Requests) ---
       - name: Create CML Sanity Report
         if: github.event_name == 'pull_request'
         env:
@@ -69,10 +83,11 @@ jobs:
           echo "- **Model Version:** Latest version in \`artifacts/\`" >> report.md
           echo "" >> report.md
           echo "### Test Results (pytest)" >> report.md
+          # NOTE: These results are hardcoded. In a real pipeline, you would parse the pytest output here.
           echo "- **Data Validation:** ✅ Passed" >> report.md
           echo "- **Model Sanity Check:** ✅ Passed" >> report.md
           echo "" >> report.md
           echo "CI pipeline successfully fetched artifacts from DVC and passed all tests on commit \`${{ github.sha }}\`." >> report.md
           
-          # Run Sanity Test (CML) and post as comment
+          # Use the CML command to post the report as a comment on the Pull Request
           cml comment create report.md
