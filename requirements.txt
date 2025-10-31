@@ -4,4 +4,5 @@ scikit-learn
 dvc[gs]
 joblib
 pytest
+mlflow
 
