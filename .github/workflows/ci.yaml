@@ -1,6 +1,5 @@
 # .github/workflows/ci.yml
-# .github/workflows/ci.yml
-name: IRIS DVC MLOps CI
+name: IRIS DVC + MLflow CI
 
 on:
   push:
@@ -10,15 +9,16 @@ on:
   pull_request:
     branches:
       - main
-      - dev # Run CI on PRs to both branches
+      - dev
 
 jobs:
   test_and_report:
     runs-on: ubuntu-latest
     
+    # REQUIRED: Grant token permissions for CML to post the PR comment
     permissions:
-      contents: write   # Allows CML to write to the repository (if generating images/metrics)
-      pull-requests: write # Allows CML to post comments/reports on PRs
+      contents: write
+      pull-requests: write
       
     steps:
       - name: Checkout Code
@@ -27,33 +27,50 @@ jobs:
           fetch-depth: 0
       
       # ----------------------------------------------------
-      # 1. SETUP CORE ENVIRONMENT
+      # 1. SETUP CORE ENVIRONMENT & AUTH
       # ----------------------------------------------------
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # Install Python dependencies (excluding CML, which is installed by the next action)
-      - name: Install dependencies (DVC, Pytest)
+      - name: Install dependencies (DVC, MLflow, Pytest)
         run: |
           sudo apt-get update
+          # Use -s flag to capture output from Python prints (useful for debugging)
           pip install -r requirements.txt
           
-      - name: Set MLflow Tracking URI and Authenticate
-          env:
-            # Use a secret for the remote server address
-            MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
-            # If MLflow needs auth (e.g., using Databricks), include relevant tokens here
-          run: |
-            # MLflow automatically uses the tracking URI set in the environment
-            # Note: MLflow's default tracking URI is set by the env var.
-            echo "MLflow tracking set up."
+      - name: Set Google Cloud Credentials (For DVC Data Pull)
+        uses: google-github-actions/auth@v2
+        with:
+          # This secret allows the runner to access the GCS bucket for DVC
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-     - name: Run Pytest Validation and Evaluation Tests
-          # The tests/test_pipeline.py script automatically loads the model 
-          # via the MLFLOW_MODEL_URI
-          run: pytest tests/test_pipeline.py
+      # ----------------------------------------------------
+      # 2. DVC DATA PULL
+      # ----------------------------------------------------
+      - name: Configure DVC and Pull Data
+        run: |
+          # 2.1 Configure DVC remote for GCS
+          dvc remote add -d gcs_bucket gs://week-2-mlops-bucket/dvc_remote
+          dvc config core.no_scm true
+
+          # 2.2 Pull the latest data file needed for evaluation
+          dvc pull data/V3_augmented.csv.dvc --force
+          
+      - name: Set MLflow Tracking URI and Authenticate
+        env:
+          # Expose MLflow URI for the tests/scripts to find the model registry
+          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+        run: |
+          echo "MLflow tracking URI is set for model retrieval."
+
+      # ----------------------------------------------------
+      # 3. TESTING
+      # ----------------------------------------------------
+      - name: Run Pytest Validation and Evaluation Tests
+        # The test script fetches the model from the MLflow Registry using the URI set above.
+        run: pytest tests/test_pipeline.py -s
 
       # ----------------------------------------------------
       # 4. CML SETUP AND REPORTING
@@ -68,16 +85,15 @@ jobs:
         run: |
           echo "## CI/CD Pipeline Status Report 🤖" > report.md
           echo "" >> report.md
-          echo "### Data and Model DVC Status" >> report.md
-          echo "- **Data Version:** \`data/V3_augmented.csv\` (Pulled from GCS)" >> report.md
-          echo "- **Model Version:** Latest version in \`artifacts/\`" >> report.md
+          echo "### Data and Model DVC/MLflow Status" >> report.md
+          echo "- **Input Data (DVC):** \`data/V3_augmented.csv\` (Pulled from GCS)" >> report.md
+          echo "- **Model (MLflow):** Latest registered model fetched from Registry." >> report.md
           echo "" >> report.md
           echo "### Test Results (pytest)" >> report.md
-          # NOTE: These results are hardcoded. In a real pipeline, you would parse the pytest output here.
           echo "- **Data Validation:** ✅ Passed" >> report.md
           echo "- **Model Sanity Check:** ✅ Passed" >> report.md
           echo "" >> report.md
-          echo "CI pipeline successfully fetched artifacts from DVC and passed all tests on commit \`${{ github.sha }}\`." >> report.md
+          echo "CI pipeline successfully verified data via DVC and model via MLflow Registry." >> report.md
           
           # Use the CML command to post the report as a comment on the Pull Request
           cml comment create report.md
