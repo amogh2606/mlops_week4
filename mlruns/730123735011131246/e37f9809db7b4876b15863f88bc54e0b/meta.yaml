@@ -1,0 +1,14 @@
+artifact_uri: file:///home/jupyter/mlruns/730123735011131246/e37f9809db7b4876b15863f88bc54e0b/artifacts
+end_time: 1761917213922
+entry_point_name: ''
+experiment_id: '730123735011131246'
+lifecycle_stage: active
+run_id: e37f9809db7b4876b15863f88bc54e0b
+run_name: dt_run_max_depth_8.0
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1761917210620
+status: 3
+tags: []
+user_id: jupyter
