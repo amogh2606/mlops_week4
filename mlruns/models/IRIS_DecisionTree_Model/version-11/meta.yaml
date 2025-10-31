@@ -1,0 +1,15 @@
+creation_timestamp: 1761914091247
+current_stage: None
+deployment_job_state: null
+description: null
+last_updated_timestamp: 1761914091247
+model_id: m-a607f28ae59f4dcaaa70363993757f86
+name: IRIS_DecisionTree_Model
+run_id: 4b7222be84904a6f851abee37cd11267
+run_link: null
+source: models:/m-a607f28ae59f4dcaaa70363993757f86
+status: READY
+status_message: null
+storage_location: file:///home/jupyter/mlruns/730123735011131246/models/m-a607f28ae59f4dcaaa70363993757f86/artifacts
+user_id: null
+version: 11

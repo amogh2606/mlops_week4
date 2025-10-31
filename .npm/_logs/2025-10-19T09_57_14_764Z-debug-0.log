@@ -1,0 +1,52 @@
+0 verbose cli /opt/conda/bin/node /opt/conda/bin/npm
+1 info using npm@11.4.2
+2 info using node@v24.4.1
+3 silly config load:file:/opt/conda/lib/node_modules/npm/npmrc
+4 silly config load:file:/home/jupyter/.npmrc
+5 silly config load:file:/opt/conda/etc/npmrc
+6 verbose title npm install @iterative/cml
+7 verbose argv "install" "--global" "@iterative/cml"
+8 verbose logfile logs-max:10 dir:/home/jupyter/.npm/_logs/2025-10-19T09_57_14_764Z-
+9 verbose logfile /home/jupyter/.npm/_logs/2025-10-19T09_57_14_764Z-debug-0.log
+10 silly packumentCache heap:2348810240 maxSize:587202560 maxEntrySize:293601280
+11 silly logfile done cleaning log files
+12 silly idealTree buildDeps
+13 silly fetch manifest @iterative/cml@*
+14 silly packumentCache full:https://registry.npmjs.org/@iterative%2fcml cache-miss
+15 http fetch GET 200 https://registry.npmjs.org/npm 201ms
+16 http fetch GET 404 https://registry.npmjs.org/@iterative%2fcml 397ms (cache skip)
+17 silly placeDep ROOT @iterative/cml@ OK for:  want: *
+18 verbose stack HttpErrorGeneral: 404 Not Found - GET https://registry.npmjs.org/@iterative%2fcml - Not found
+18 verbose stack     at /opt/conda/lib/node_modules/npm/node_modules/npm-registry-fetch/lib/check-response.js:103:15
+18 verbose stack     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+18 verbose stack     at async RegistryFetcher.packument (/opt/conda/lib/node_modules/npm/node_modules/pacote/lib/registry.js:90:19)
+18 verbose stack     at async RegistryFetcher.manifest (/opt/conda/lib/node_modules/npm/node_modules/pacote/lib/registry.js:128:23)
+18 verbose stack     at async #fetchManifest (/opt/conda/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:1213:20)
+18 verbose stack     at async #nodeFromEdge (/opt/conda/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:1051:19)
+18 verbose stack     at async #buildDepStep (/opt/conda/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:915:11)
+18 verbose stack     at async Arborist.buildIdealTree (/opt/conda/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/build-ideal-tree.js:182:7)
+18 verbose stack     at async Arborist.reify (/opt/conda/lib/node_modules/npm/node_modules/@npmcli/arborist/lib/arborist/reify.js:131:5)
+18 verbose stack     at async Install.exec (/opt/conda/lib/node_modules/npm/lib/commands/install.js:149:5)
+19 verbose statusCode 404
+20 verbose pkgid @iterative/cml@*
+21 error code E404
+22 error 404 Not Found - GET https://registry.npmjs.org/@iterative%2fcml - Not found
+23 error 404
+24 error 404  '@iterative/cml@*' is not in this registry.
+25 error 404
+26 error 404 Note that you can also install from a
+27 error 404 tarball, folder, http url, or git url.
+28 silly unfinished npm timer reify 1760867836019
+29 silly unfinished npm timer reify:loadTrees 1760867836103
+30 verbose cwd /home/jupyter
+31 verbose os Linux 5.10.0-35-cloud-amd64
+32 verbose node v24.4.1
+33 verbose npm  v11.4.2
+34 notice
+34 notice New [33mminor[39m version of npm available! [33m11.4.2[39m -> [34m11.6.2[39m
+34 notice Changelog: [34mhttps://github.com/npm/cli/releases/tag/v11.6.2[39m
+34 notice To update run: [4mnpm install -g npm@11.6.2[24m
+34 notice  { force: true, Symbol(proc-log.meta): true }
+35 verbose exit 1
+36 verbose code 1
+37 error A complete log of this run can be found in: /home/jupyter/.npm/_logs/2025-10-19T09_57_14_764Z-debug-0.log

@@ -1,0 +1,4 @@
+[core]
+    remote = gcs_bucket
+['remote "gcs_bucket"']
+    url = gs://week-2-mlops-bucket/dvc_remote

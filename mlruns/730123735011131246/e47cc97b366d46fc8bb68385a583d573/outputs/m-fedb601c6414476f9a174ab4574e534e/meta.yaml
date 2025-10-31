@@ -1,0 +1,6 @@
+destination_id: m-fedb601c6414476f9a174ab4574e534e
+destination_type: MODEL_OUTPUT
+source_id: m-fedb601c6414476f9a174ab4574e534e
+source_type: RUN_OUTPUT
+step: 0
+tags: {}

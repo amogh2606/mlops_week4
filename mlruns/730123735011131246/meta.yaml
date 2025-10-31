@@ -1,0 +1,6 @@
+artifact_location: file:///home/jupyter/mlruns/730123735011131246
+creation_time: 1761914042661
+experiment_id: '730123735011131246'
+last_update_time: 1761914042661
+lifecycle_stage: active
+name: IRIS_Classifier_Hyperopt
