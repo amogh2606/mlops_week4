@@ -49,13 +49,19 @@ jobs:
       # ----------------------------------------------------
       # 2. DVC DATA PULL
       # ----------------------------------------------------
-      - name: Configure DVC and Pull Data
+      - name: Configure DVC for GCS Remote
         run: |
-          # 2.1 Configure DVC remote for GCS
           dvc remote add -d gcs_bucket gs://week-2-mlops-bucket/dvc_remote
           dvc config core.no_scm true
 
-          # 2.2 Pull the latest data file needed for evaluation
+      - name: Set Google Cloud Credentials
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: DVC Pull Data and Model
+        run: |
+          # Use --force to prevent issues with files generated/left over by the runner
           dvc pull data/V3_augmented.csv.dvc --force
           
       - name: Set MLflow Tracking URI and Authenticate
