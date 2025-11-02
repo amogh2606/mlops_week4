@@ -52,7 +52,7 @@ jobs:
 
       - name: DVC Pull Data
         run: |
-          dvc remote add -d gcs_bucket gs://week-2-mlops-bucket/dvc_remote
+          dvc remote add -d gcs_bucket gs://week-2-mlops-bucket/dvc_remote --force
           dvc config core.no_scm true
           dvc pull data/V3_augmented.csv.dvc --force
 
