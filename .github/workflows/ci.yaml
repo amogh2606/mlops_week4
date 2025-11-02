@@ -1,31 +1,28 @@
-# .github/workflows/main.yml
 name: Continuous Deployment to GKE
 
 on:
   push:
     branches:
-      # Deployment runs on push to these branches
       - main
-      - week6
+      - week6 # Assuming 'week6' is your deployment branch
   pull_request:
-    # CI tests run on PR to these branches
     branches:
       - main
       - week6
 
-# Define deployment variables (CRITICAL: UPDATE THESE VALUES)
+# CRITICAL: Root-level Environment Variables
 env:
-  PROJECT_ID: week-1-474208     # <<<--- UPDATE GCP PROJECT ID
+  PROJECT_ID: week-1-474208
   GKE_CLUSTER: iris-mlops-cluster
   GKE_ZONE: us-central1-c
   IMAGE_NAME: iris-fastapi-api
-  GAR_LOCATION: us-central1                # Artifact Registry location
+  GAR_LOCATION: us-central1
   GAR_REPO: mlops-repository
   IMAGE_URL: ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/${{ env.IMAGE_NAME }}
 
 jobs:
   # ------------------------------------------------------------------
-  # JOB 1: Continuous Integration & Reporting (Runs on Push and PR)
+  # JOB 1: Continuous Integration & Reporting
   # ------------------------------------------------------------------
   ci-tests:
     runs-on: ubuntu-latest
@@ -48,11 +45,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          # Install dependencies for running tests (including DVC/GCSFS if needed)
           pip install -r requirements.txt
           
-      - name: Set Google Cloud Credentials (For DVC Data Pull during CI)
-        # Auth is necessary here for DVC to pull training data
+      - name: Set Google Cloud Credentials
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
@@ -61,7 +56,6 @@ jobs:
         run: |
           dvc remote add -d gcs_bucket gs://week-2-mlops-bucket/dvc_remote
           dvc config core.no_scm true
-          # Only pull the data needed for testing (model is assumed to be in Git for simplicity)
           dvc pull data/V3_augmented.csv.dvc --force
           
       - name: Run Pytest Validation and Evaluation Tests
@@ -83,53 +77,43 @@ jobs:
   # JOB 2: Continuous Deployment (Build, Push, Deploy to GKE)
   # ------------------------------------------------------------------
   build-and-deploy:
-    # Only run deployment if the previous test job passed AND it's a push (not a PR check)
+    # Runs if CI passed and it's a direct push (not a PR check)
     if: github.event_name == 'push' && success()
     runs-on: ubuntu-latest
-    needs: [ci-tests] # Dependency on CI tests passing
+    needs: [ci-tests]
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # --- 1. GCP Authentication (For Docker/GAR/GKE) ---
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          # Uses the Service Account key to gain authorization
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}-docker.pkg.dev --quiet
 
-      # --- 2. Build and Push Docker Image ---
       - name: Build and Push Docker Image
         run: |
           IMAGE_TAG=${{ github.sha }}
-          
-          # Build the image using the committed Dockerfile
           docker build -t ${{ env.IMAGE_URL }}:${IMAGE_TAG} .
-            
-          # Push the image to Google Artifact Registry
           docker push ${{ env.IMAGE_URL }}:${IMAGE_TAG}
 
-      # --- 3. Deploy to GKE ---
       - name: Get GKE Credentials
-        # Authenticates and sets up kubectl configuration for the GKE cluster
         uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ env.GKE_CLUSTER }}
           location: ${{ env.GKE_ZONE }}
 
       - name: Deploy to GKE
-        uses: 'w9jds/gke-kubectl-action@master' 
+        uses: 'w9jds/gke-kubectl-action@master'
         with:
           cmd: |
             IMAGE_TAG=${{ github.sha }}
             IMAGE_PATH=${{ env.IMAGE_URL }}:${IMAGE_TAG}
             
             # Substitute the new image path into the deployment.yaml
-            # This ensures Kubernetes pulls the newly pushed image version.
             sed -i "s|gcr.io/GCP_PROJECT_ID/iris-api:latest|${IMAGE_PATH}|g" deployment.yaml
             
             echo "Deploying image: ${IMAGE_PATH} to GKE..."
