@@ -113,9 +113,9 @@ jobs:
          IMAGE_TAG=${{ github.sha }}
          IMAGE_PATH=${{ env.IMAGE_URL }}:${IMAGE_TAG}
 
-         sed -i "s|gcr.io/GCP_PROJECT_ID/iris-api:latest|${IMAGE_PATH}|g" deployment.yaml
+         
 
          echo "Deploying image: ${IMAGE_PATH} to GKE..."
-         kubectl apply -f deployment.yaml
+         kubectl set image deployment/iris-api-deployment iris-api=${IMAGE_PATH} --record
 
          kubectl rollout status deployment/iris-api-deployment --timeout=5m
