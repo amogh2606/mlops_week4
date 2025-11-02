@@ -108,19 +108,14 @@ jobs:
           cluster_name: ${{ env.GKE_CLUSTER }}
           location: ${{ env.GKE_ZONE }}
 
-      - name: Deploy to GKE
-        uses: google-github-actions/kubectl@v1
-        with:
-          project_id: ${{ env.PROJECT_ID }}
-          cluster_name: ${{ env.GKE_CLUSTER }}
-          location: ${{ env.GKE_ZONE }}
-          command: |
-            IMAGE_TAG=${{ github.sha }}
-            IMAGE_PATH=${IMAGE_URL}:${IMAGE_TAG}
+      - name: Deploy to GKE (Using Standard Shell)
+        run: |
+         IMAGE_TAG=${{ github.sha }}
+         IMAGE_PATH=${{ env.IMAGE_URL }}:${IMAGE_TAG}
 
-            sed -i "s|gcr.io/GCP_PROJECT_ID/iris-api:latest|${IMAGE_PATH}|g" deployment.yaml
+         sed -i "s|gcr.io/GCP_PROJECT_ID/iris-api:latest|${IMAGE_PATH}|g" deployment.yaml
 
-            echo "Deploying image: ${IMAGE_PATH} to GKE..."
-            kubectl apply -f deployment.yaml
+         echo "Deploying image: ${IMAGE_PATH} to GKE..."
+         kubectl apply -f deployment.yaml
 
-            kubectl rollout status deployment/iris-api-deployment --timeout=5m
+         kubectl rollout status deployment/iris-api-deployment --timeout=5m
