@@ -5,4 +5,4 @@ dvc[gs]
 joblib
 pytest
 mlflow
-
+fastapi
