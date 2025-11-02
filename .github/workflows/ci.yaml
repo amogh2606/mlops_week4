@@ -109,9 +109,12 @@ jobs:
           location: ${{ env.GKE_ZONE }}
 
       - name: Deploy to GKE
-        uses: 'w9jds/gke-kubectl-action@master'
+        uses: google-github-actions/kubectl@v1
         with:
-          cmd: |
+          project_id: ${{ env.PROJECT_ID }}
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_ZONE }}
+          command: |
             IMAGE_TAG=${{ github.sha }}
             IMAGE_PATH=${IMAGE_URL}:${IMAGE_TAG}
 
