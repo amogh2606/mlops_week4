@@ -116,6 +116,9 @@ jobs:
          
 
          echo "Deploying image: ${IMAGE_PATH} to GKE..."
-         kubectl set image deployment/iris-api-deployment iris-api=${IMAGE_PATH} --record
+         # Create deployment if not exists
+         kubectl apply -f k8s/deployment.yaml
 
+          # Update image in existing deployment
+         kubectl set image deployment/iris-api-deployment iris-api=${IMAGE_PATH}
          kubectl rollout status deployment/iris-api-deployment --timeout=5m
